@@ -35,7 +35,7 @@ COPY . .
 RUN composer install --optimize-autoloader --no-dev
 
 # 安装 NPM 依赖并构建前端
-RUN npm install && npm run build
+#RUN npm install && npm run build
 
 # 设置权限
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
