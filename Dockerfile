@@ -37,12 +37,39 @@ RUN composer install --optimize-autoloader --no-dev
 # 安装 NPM 依赖并构建前端
 #RUN npm install && npm run build
 
-# ... 之前的配置代码 ...
+# 设置正确的目录权限
+RUN chown -R www-data:www-data /var/www/html/storage \
+    /var/www/html/bootstrap/cache
 
-# 设置权限
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage \
+    /var/www/html/bootstrap/cache
+
+# 确保某些特定目录有完全权限
+RUN chmod -R 777 /var/www/html/storage/framework/ \
+    /var/www/html/storage/logs/ \
+    /var/www/html/storage/app/ \
+    /var/www/html/bootstrap/cache/
+
+# 创建必要的缓存目录（如果不存在）
+RUN mkdir -p /var/www/html/storage/framework/cache \
+    /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/views \
+    /var/www/html/storage/logs
+
+# 最后再次确保所有权
+RUN chown -R www-data:www-data /var/www/html/storage \
+    /var/www/html/bootstrap/cache
 
 EXPOSE 80
 
-# 启动命令：运行迁移后启动应用
-CMD sh -c "php artisan migrate --force && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"
+# 启动命令：先修复权限，再启动应用
+CMD ["sh", "-c", "\
+  echo '正在修复文件权限...' && \
+  chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+  chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
+  chmod -R 777 /var/www/html/storage/framework/ /var/www/html/storage/logs/ && \
+  echo '权限修复完成！' && \
+  php artisan migrate --force && \
+  echo '启动应用中...' && \
+  /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf\n\
+"]
