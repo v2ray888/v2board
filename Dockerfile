@@ -19,6 +19,8 @@ RUN apk add --no-cache \
 
 # ... 前面的部分保持不变 ...
 
+# ... 前面的部分保持不变 ...
+
 # 安装 PHP 扩展
 RUN docker-php-ext-install pdo pdo_mysql zip pcntl
 RUN pecl install redis && docker-php-ext-enable redis
