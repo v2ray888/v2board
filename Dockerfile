@@ -37,11 +37,12 @@ RUN composer install --optimize-autoloader --no-dev
 # 安装 NPM 依赖并构建前端
 #RUN npm install && npm run build
 
+# ... 之前的配置代码 ...
+
 # 设置权限
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# 暴露端口
 EXPOSE 80
 
-# 启动 Supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# 启动命令：运行迁移后启动应用
+CMD sh -c "php artisan migrate --force && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"
